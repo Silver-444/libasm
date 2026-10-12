@@ -8,15 +8,20 @@ vpath %.asm $(SRCS_DIR)
 
 # ----------- Files -----------
 ASM_FILES =	ft_strlen.asm \
-			ft_strcpy.asm \
+# 			ft_strcpy.asm \
 # 			ft_strcmp.asm \
 # 			ft_write.asm \
 # 			ft_read.asm \
 # 			ft_strdup.asm
 
-# ASM_FILE_BONUS = 
+# ASM_FILE_BONUS =	ft_atoi_base_bonus.asm \
+					ft_list_push_front_bonus.asm \
+					ft_list_size_bonus.asm \
+					ft_list_sort_bonus.asm \
+					ft_list_remove_if_bonus.asm
 
 OBJS = $(addprefix $(OBJS_DIR), $(ASM_FILES:.asm=.o))
+OBJS_BONUS = $(addprefix $(OBJS_DIR), $(ASM_FILES_BONUS:.asm=.o))
 
 # ----------- Compilation -----------
 ASM = nasm
@@ -32,9 +37,15 @@ all: $(NAME)
 $(NAME) : $(OBJS)
 	ar rcs $(NAME) $(OBJS)
 
+bonus: $(OBJS) $(OBJS_BONUS)
+	ar rcs $(NAME) $(OBJS) $(OBJS_BONUS)
+
 $(OBJS_DIR)%.o : %.asm
 	mkdir -p $(OBJS_DIR)
 	$(ASM) $(ASM_FLAGS) $< -o $@
+
+# test:
+# 	$(CC) $(CC_FLAGS) -L. -l:$(NAME)
 
 clean:
 	rm -rf $(OBJS_DIR)
@@ -44,4 +55,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all bonus test clean fclean re

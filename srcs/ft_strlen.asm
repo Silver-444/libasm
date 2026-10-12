@@ -1,16 +1,20 @@
-global  _ft_strlen
+global	ft_strlen
 
 section .text
 
-_ft_strlen: 
-        mov rax, 0
-        jmp loop
+ft_strlen: 
+	mov rax, 0
+	jmp loop
 
 loop:   
-        cmp BYTE [rdi + rax], 0 ; compare byte value with 0
-        je  exit                ; jump to exit if cmp equal
-        inc rax                 ; increment rax
-        jmp loop                ; jump at the begining of loop
+	cmp BYTE [rdi + rax], 0 ; compare byte value with 0
+	je  exit                ; jump to exit if cmp equal
+	inc rax                 ; increment rax
+	jmp loop                ; jump at the begining of loop
 
 exit: 
-        ret
+	ret
+
+; size_t	strlen(const char *str)
+; *str		-> rdi
+; return	-> rax
