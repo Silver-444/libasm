@@ -7,11 +7,12 @@ ft_strcmp:
 	jmp loop
 
 loop:
-	cmp BYTE [rdi + rax], 0
+	cmp BYTE [rdi + rax], 0			; if s1[0] == \0, exit
 	je exit
-	cmp BYTE [rsi + rax], 0
+	cmp BYTE [rsi + rax], 0			; if s2[0] == \0, exit
 	je exit
-	cmp [rdi + rax], [rsi + rax] ; ERROR: need to use a temp registery to move, why ?
+	mov r10, BYTE [rsi + rax]		; mov [rsi + rax] in a temp registery to compare
+	cmp BYTE [rdi + rax], r10 		; need to use a temp registery to move, why ?
 	jne exit
 	inc rax
 	jmp loop
