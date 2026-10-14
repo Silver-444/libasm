@@ -12,9 +12,9 @@ vpath %.asm $(SRCS_DIR)
 ASM_FILES =	ft_strlen.asm \
 			ft_write.asm \
 			ft_read.asm \
-# 			ft_strcpy.asm \
-# 			ft_strcmp.asm \
-# 			ft_strdup.asm
+			ft_strcpy.asm \
+			ft_strcmp.asm \
+			ft_strdup.asm
 
 # ASM_FILE_BONUS =	ft_atoi_base_bonus.asm \
 					ft_list_push_front_bonus.asm \

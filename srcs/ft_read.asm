@@ -7,10 +7,10 @@ ft_read:
         mov rax, 0	; 0 = read syscall number
         syscall
         cmp rax, 0
-		jl error
+		jl .error
         ret
 
-error: 
+.error: 
 	neg rax							; get absolute value of the return value
 	mov rdi, rax					; stock return value of write because rax will be filled with errno_location return value
 	call __errno_location wrt ..plt	; call errno_location function to get the adress of errno variable

@@ -7,10 +7,10 @@ ft_write:
 	mov rax, 1	; 1 = write syscall number
 	syscall		; call system function
 	cmp rax, 0	; compare the return value to 0
-	jl error	; if the result is less than 0, jump to error
+	jl .error	; if the result is less than 0, jump to error
 	ret
 
-error:
+.error:
 	neg rax							; get absolute value of the return value
 	mov rdi, rax					; stock return value of write because rax will be filled with errno_location return value
 	call __errno_location wrt ..plt	; call errno_location function to get the adress of errno variable
