@@ -23,12 +23,11 @@ static char *make_str(size_t len, int c)
 }
 
 /////// FT_STRLEN ///////
-static void test_strlen(void)
+static void test_strlen_basic(void)
 {
-	printf(BOLD "ft_strlen\n" RST);
     const char *t[] = { "", "a", "ab", "hello", "Hello, World!", "42", "   ",
         "\t\n\r", "\x80\xff\x01\x7f", "0123456789012345678901234567890123456789", 
-		"abc\0def", "\0abc", NULL
+		"abc\0def", "abc\0def" + 4, "\0abc", NULL
 	};
     for (int i = 0; t[i]; i++)
 	{
@@ -38,9 +37,27 @@ static void test_strlen(void)
 			printf(GREEN " [OK] " RST);
 		printf("result : %zu | expected :%zu\n", ft_strlen(t[i]), strlen(t[i]));
 	}
-	printf("\n");
 }
 
+static void test_strlen_long(void)
+{
+    size_t n = 10 * 1024 * 1024;
+    char *s = make_str(n, 'a');
+	if (ft_strlen(s) != strlen(s))
+		printf(RED " [KO] " RST);
+	else
+		printf(GREEN " [OK] " RST);
+	printf("result : %zu | expected :%zu\n", ft_strlen(s), strlen(s));
+    free(s);
+}
+
+static void test_strlen(void)
+{
+	printf(BOLD "ft_strlen\n" RST);
+	test_strlen_basic();
+	test_strlen_long();
+	printf("\n");
+}
 
 /////// FT_STRCPY ///////
 static void test_strcpy_basic(void)
@@ -106,9 +123,62 @@ static void test_strcpy(void)
 	printf("\n");
 }
 
+/////// FT_STRCMP ///////
+static void test_strcmp_basic(void)
+{
+    const char *p[][2] = {
+        {"", ""}, {"", "a"}, {"a", ""}, {"a", "a"}, {"a", "b"}, {"b", "a"},
+        {"abc", "abc"}, {"abc", "abd"}, {"abd", "abc"}, {"abc", "abcd"},
+        {"abcd", "abc"}, {"Hello", "hello"}, {"hello", "Hello"},
+        {"abc\0x", "abc\0y"}, {"  ", " "}, {"\t", " "}, {"0", "1"}, 
+		{"zzzzzzzzzzzzzzzzzzzz", "zzzzzzzzzzzzzzzzzzzy"},
+        {"azzzzzzzzzzzzzzzzzzzz", "bzzzzzzzzzzzzzzzzzzzz"},
+		{"\x80", "\x7f"}, {"\x7f", "\x80"}, {"\xff", "a"}, {"a", "\xff"},
+		{"\xff", "\xfe"}, {"abc\xff", "abc\x01"}, {"\xe9", ""}, 
+        {NULL, NULL}
+    };
+    for (int i = 0; p[i][0]; i++) 
+	{
+		if (ft_strcmp(p[i][0], p[i][1]) != strcmp(p[i][0], p[i][1]))
+			printf(RED " [KO] " RST);
+		else
+			printf(GREEN " [OK] " RST);
+        printf("result : %d | expected : %d\n", ft_strcmp(p[i][0], p[i][1]), strcmp(p[i][0], p[i][1]));
+    }
+}
+
+static void test_strcmp_long(void)
+{
+    size_t n = 5 * 1024 * 1024;
+    char *a = make_str(n, 'a');
+	char *b = make_str(n, 'a');
+	if (ft_strcmp(a, b) != strcmp(a, b))
+		printf(RED " [KO] " RST);
+    else 
+	{
+		b[n - 1] = 'b';
+		if (ft_strcmp(a, b) != strcmp(a, b))
+			printf(RED " [KO] " RST);
+		else
+			printf(GREEN " [OK] " RST);
+	}
+	printf("result : %d | expected : %d\n", ft_strcmp(a, b), strcmp(a, b));
+    free(a); 
+	free(b);
+}
+
+static void test_strcmp(void)
+{
+	printf(BOLD "ft_strcmp\n" RST);
+	test_strcmp_basic();
+	test_strcmp_long();
+	printf("\n");
+}
+
 int	main()
 {
 	printf(BOLD "=== LIBASM TESTER ===\n\n" RST);
 	test_strlen();
 	test_strcpy();
+	test_strcmp();
 }
