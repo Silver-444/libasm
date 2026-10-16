@@ -13,7 +13,8 @@
 #define BOLD  "\033[1m"
 #define RST   "\033[0m"
 
-static char *make_str(size_t len, int c)
+/// Utils
+static char*	make_str(size_t len, int c)
 {
     char *s = malloc(len + 1);
 	// protection malloc
@@ -23,7 +24,7 @@ static char *make_str(size_t len, int c)
 }
 
 /////// FT_STRLEN ///////
-static void test_strlen_basic(void)
+static void	test_strlen_basic(void)
 {
     const char *t[] = { "", "a", "ab", "hello", "Hello, World!", "42", "   ",
         "\t\n\r", "\x80\xff\x01\x7f", "0123456789012345678901234567890123456789", 
@@ -39,7 +40,7 @@ static void test_strlen_basic(void)
 	}
 }
 
-static void test_strlen_long(void)
+static void	test_strlen_long(void)
 {
     size_t n = 10 * 1024 * 1024;
     char *s = make_str(n, 'a');
@@ -51,7 +52,7 @@ static void test_strlen_long(void)
     free(s);
 }
 
-static void test_strlen(void)
+static void	test_strlen(void)
 {
 	printf(BOLD "ft_strlen\n" RST);
 	test_strlen_basic();
@@ -60,7 +61,7 @@ static void test_strlen(void)
 }
 
 /////// FT_STRCPY ///////
-static void test_strcpy_basic(void)
+static void	test_strcpy_basic(void)
 {
 	const char *t[] = { "", "a", "hello", "Hello, World!", "\x80\xff\x01", NULL };
     for (int i = 0; t[i]; i++) {
@@ -80,7 +81,7 @@ static void test_strcpy_basic(void)
     }
 }
 
-static void test_strcpy_embedded_nul(void)
+static void	test_strcpy_embedded_nul(void)
 {
 	const char src[] = "abc\0def";
 	size_t l = strlen(src);
@@ -96,7 +97,7 @@ static void test_strcpy_embedded_nul(void)
     printf("result : %s | expected : %s\n", dst, src);
 }
 
-static void test_strcpy_long(void)
+static void	test_strcpy_long(void)
 {
     size_t n = 10 * 1024 * 1024;
     char *src = make_str(n, 'b');
@@ -114,7 +115,7 @@ static void test_strcpy_long(void)
 	free(dst);
 }
 
-static void test_strcpy(void)
+static void	test_strcpy(void)
 {
 	printf(BOLD "ft_strcpy\n" RST);
 	test_strcpy_basic();
@@ -124,7 +125,7 @@ static void test_strcpy(void)
 }
 
 /////// FT_STRCMP ///////
-static void test_strcmp_basic(void)
+static void	test_strcmp_basic(void)
 {
     const char *p[][2] = {
         {"", ""}, {"", "a"}, {"a", ""}, {"a", "a"}, {"a", "b"}, {"b", "a"},
@@ -147,7 +148,7 @@ static void test_strcmp_basic(void)
     }
 }
 
-static void test_strcmp_long(void)
+static void	test_strcmp_long(void)
 {
     size_t n = 5 * 1024 * 1024;
     char *a = make_str(n, 'a');
@@ -167,7 +168,7 @@ static void test_strcmp_long(void)
 	free(b);
 }
 
-static void test_strcmp(void)
+static void	test_strcmp(void)
 {
 	printf(BOLD "ft_strcmp\n" RST);
 	test_strcmp_basic();

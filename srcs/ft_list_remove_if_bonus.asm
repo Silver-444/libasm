@@ -12,3 +12,9 @@
 ;(*free_fct)(list_ptr->data)
 ; list_ptr  -> rdi
 ; return    -> rax
+
+
+global  ft_list_remove_if
+
+ft_list_remove_if:
+    ret

@@ -32,7 +32,7 @@ ASM = nasm
 ASM_FLAGS = -f elf64
 
 CC = gcc
-CC_FLAGS = -Wall -Wextra -Werror
+CC_FLAGS = -Wall -Wextra -Werror -g3
 
 
 # ============ Rules ============

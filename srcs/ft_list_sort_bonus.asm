@@ -5,3 +5,8 @@
 ;(*cmp)(list_ptr->data, list_other_ptr->data)
 ; list_ptr	        -> rdi
 ; list_other_ptr    -> rsi
+
+global ft_list_sort
+
+ft_list_sort:
+    ret

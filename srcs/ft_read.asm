@@ -4,11 +4,11 @@ extern __errno_location
 section .text
 
 ft_read: 
-        mov rax, 0	; 0 = read syscall number
-        syscall
-        cmp rax, 0
-		jl .error
-        ret
+    mov rax, 0	; 0 = read syscall number
+    syscall
+    cmp rax, 0
+	jl .error
+    ret
 
 .error: 
 	neg rax							; get absolute value of the return value

@@ -15,7 +15,7 @@ ft_strcpy:
 
 .exit:
 	mov [rdi + rax], 0				; add '\0' at the end of dst
-	mov rax, rdi					; set return value with dst
+	mov rax, rdi					; set return value with *dst
 	ret
 
 ; char	*strcpy(char *dst, const char *src)
