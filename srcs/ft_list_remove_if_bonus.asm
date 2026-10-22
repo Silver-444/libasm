@@ -13,8 +13,12 @@
 ; list_ptr  -> rdi
 ; return    -> rax
 
+BITS 64
+default rel
+
 
 global  ft_list_remove_if
+extern  free
 
 ft_list_remove_if:
     push rbx
@@ -43,11 +47,15 @@ ft_list_remove_if:
 .remove:
     mov rax, [r15 + 8]  ; rax <- node->next
     mov [rbx], rax      ; update begin
-    mov rdi, [r15]
-    call r14
+    mov rdi, [r15]      ; rdi <- node->data
+    call r14            ; free_ft(node->data)
+    mov rdi, r15
+    call free wrt ..plt ; free(node)
+    jmp .loop
+
 
 .next_node:
-    mov r15, [r15 + 8]  ; node = node->next
+    lea rbx, [r15 + 8]  ; node = &node->next
     jmp .loop
 
 .end:
@@ -57,6 +65,3 @@ ft_list_remove_if:
     pop r12
     pop rbx
     ret
-
-; node_precedent->next = node->next
-; free(node)
