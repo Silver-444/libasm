@@ -206,9 +206,33 @@ static void	test_read(void)
 }
 
 /////// FT_STRDUP ///////
+static void test_strdup_basic(void)
+{
+    const char *t[] = { "", "a", "hello", "Hello, World!", "\x80\xff\x01", "abc\0def", NULL };
+    for (int i = 0; t[i]; i++) 
+	{
+        char *res = ft_strdup(t[i]);
+        size_t len = strlen(t[i]);
+		if (!res)
+		{
+			printf(RED " [KO] " RST "return NULL ");
+			continue;
+		}
+		if (res == t[i])
+			printf(RED " [KO] " RST "return the same address ");
+        else if (memcmp(res, t[i], len + 1) != 0)
+			printf(RED " [KO] " RST "wrong content ");
+        else
+			printf(GREEN " [OK] " RST);
+		printf("case : %s | result : %s\n", t[i], res);
+        free(res);
+    }
+}
+
 static void	test_strdup(void)
 {
 	printf(BOLD "ft_strdup\n" RST);
+	test_strdup_basic();
 	printf("\n");
 }
 
