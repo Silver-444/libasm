@@ -28,7 +28,7 @@ static void	test_strlen_basic(void)
 {
     const char *t[] = { "", "a", "ab", "hello", "Hello, World!", "42", "   ",
         "\t\n\r", "\x80\xff\x01\x7f", "0123456789012345678901234567890123456789", 
-		"abc\0def", "abc\0def" + 4, "\0abc", NULL
+		"abc\0def", &"abc\0def"[4], "\0abc", NULL
 	};
     for (int i = 0; t[i]; i++)
 	{
@@ -176,10 +176,49 @@ static void	test_strcmp(void)
 	printf("\n");
 }
 
+/////// FT_WRITE ///////
+// static void t_write_pipe(void)
+// {
+//     int p[2];
+//     char buf[64] = {0};
+//     const char *msg = "Hello, libasm!";
+//     CHECK(pipe(p) == 0, "pipe");
+//     ssize_t r = ft_write(p[1], msg, strlen(msg));
+//     CHECK(r == (ssize_t)strlen(msg), "retour obtenu %zd, attendu %zu", r, strlen(msg));
+//     ssize_t n = read(p[0], buf, 63);
+//     CHECK(n == (ssize_t)strlen(msg) && memcmp(buf, msg, strlen(msg)) == 0,
+//           "contenu lu dans le pipe incorrect (%zd octets)", n);
+//     close(p[0]); close(p[1]);
+// }
+
+
+static void	test_write(void)
+{
+	printf(BOLD "ft_write\n" RST);
+	printf("\n");
+}
+
+/////// FT_READ ///////
+static void	test_read(void)
+{
+	printf(BOLD "ft_read\n" RST);
+	printf("\n");
+}
+
+/////// FT_STRDUP ///////
+static void	test_strdup(void)
+{
+	printf(BOLD "ft_strdup\n" RST);
+	printf("\n");
+}
+
 int	main()
 {
 	printf(BOLD "=== LIBASM TESTER ===\n\n" RST);
 	test_strlen();
 	test_strcpy();
 	test_strcmp();
+	test_write();
+	test_read();
+	test_strdup();
 }

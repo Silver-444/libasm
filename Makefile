@@ -16,7 +16,7 @@ ASM_FILES =	ft_strlen.asm \
 			ft_strcmp.asm \
 			ft_strdup.asm
 
-# ASM_FILE_BONUS =	ft_atoi_base_bonus.asm \
+ASM_FILES_BONUS =	ft_atoi_base_bonus.asm \
 					ft_list_push_front_bonus.asm \
 					ft_list_size_bonus.asm \
 					ft_list_sort_bonus.asm \
@@ -29,9 +29,9 @@ TESTER_FILE = test/tester.c
 
 # ----------- Compilation -----------
 ASM = nasm
-ASM_FLAGS = -f elf64
+ASM_FLAGS = -f elf64 -g
 
-CC = gcc
+CC = clang
 CC_FLAGS = -Wall -Wextra -Werror -g3
 
 
