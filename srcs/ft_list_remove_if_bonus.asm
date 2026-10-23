@@ -42,7 +42,7 @@ ft_list_remove_if:
     mov rsi, r12    ; rsi <- node->data
     call r13
     cmp rax, 0
-    je .next_node
+    jne .next_node
 
 .remove:
     mov rax, [r15 + 8]  ; rax <- node->next

@@ -14,15 +14,18 @@ ft_list_sort:
     push r13
     push r14
     sub rsp, 8
+
     cmp rdi, 0          ; if begin_list == NULL, exit
     je .end
+
     cmp QWORD [rdi], 0  ; if *begin_list == NULL, exit 
-    je .end 
+    je .end
+
     mov r12, rsi        ; r12 <- cmp()
     mov r13, rdi        ; r13 <- begin_list
 
 .outer_loop:
-    mov r14, 0          ; swapped = 0
+    xor r14, r14          ; swapped = 0
     mov rbx, [r13]      ; rbx <- begin_list
 
 .inner_loop:
@@ -33,15 +36,15 @@ ft_list_sort:
     mov rsi, [rsi]      ; rsi <- node->next->data
     call r12            ; call cmp(node->data, node->next->data)
     cmp eax, 0          ; if return_value <= 0, don't swap
-    jle .no_swap
-    mov rcx, [rbx]
+    jle .next_node
+    mov rcx, [rbx]      ; rcx <- node->data
     mov rdx, [rbx + 8]
-    mov r8, [rdx]
+    mov r8, [rdx]       ; rdx <- node->next->data
     mov [rbx], r8       ; node->data = node->next->data
-    mov [rbx + 8], rcx  ; node->next->data = node->data
+    mov [rdx], rcx      ; node->next->data = node->data
     mov r14, 1          ; swapped = 1
 
-.no_swap:
+.next_node:
     mov rbx, [rbx + 8]  ; node = node->next
     jmp .inner_loop
 
