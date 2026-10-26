@@ -14,7 +14,7 @@ ft_strcpy:
 	jmp .loop						; jump back at the begining of the loop
 
 .exit:
-	mov [rdi + rax], 0				; add '\0' at the end of dst
+	mov BYTE [rdi + rax], 0				; add '\0' at the end of dst
 	mov rax, rdi					; set return value with *dst
 	ret
 
