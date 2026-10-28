@@ -614,6 +614,578 @@ static void	test_strdup(void)
 	printf("\n");
 }
 
+/********************************* BONUS PART *********************************/
+
+# define LIST_MAX 1000000
+# define PRINT_MAX 20
+/////// BONUS UTILS ///////
+
+static void	put_escaped(const char *s)
+{
+	for (; *s; s++)
+	{
+		switch (*s)
+		{
+			case '\t': printf("\\t"); break ;
+			case '\n': printf("\\n"); break ;
+			case '\v': printf("\\v"); break ;
+			case '\f': printf("\\f"); break ;
+			case '\r': printf("\\r"); break ;
+			default: putchar(*s);
+		}
+	}
+}
+
+static t_list	*lst_new(void *data)
+{
+	t_list *new_node = (t_list *) malloc(sizeof(t_list));
+	if (!new_node)
+		return NULL;
+	new_node->data = data;
+	new_node->next = NULL;
+	return (new_node);
+}
+
+static t_list	*build_list(void **data, size_t n)
+{
+	t_list	*head = NULL;
+	t_list	**cur = &head;
+ 
+	for (size_t i = 0; i < n; i++)
+	{
+		*cur = lst_new(data[i]);
+		cur = &(*cur)->next;
+	}
+	return (head);
+}
+
+static void	print_int_list(t_list **lst)
+{
+	int		i = 0;
+	t_list	*tmp = *lst;
+
+	if (!tmp)
+	{
+		printf("(empty)");
+		return ;
+	}
+	while (tmp && i < PRINT_MAX)
+	{
+		if (i != 0)
+			printf(" -> ");
+		printf("%d", *((int *)tmp->data));
+		i++;
+		tmp = tmp->next;
+	}
+	if (tmp)
+		printf(" -> ...");
+}
+
+static void	print_string_list(t_list **lst)
+{
+	int		i = 0;
+	t_list	*tmp = *lst;
+
+	if (!tmp)
+	{
+		printf("(empty)");
+		return ;
+	}
+	while (tmp && i < PRINT_MAX)
+	{
+		if (i != 0)
+			printf(" -> ");
+		printf("%s", ((char *)tmp->data));
+		i++;
+		tmp = tmp->next;
+	}
+	if (tmp)
+		printf(" -> ...");
+}
+
+static void	print_int_array(const int *v, size_t n)
+{
+	if (n == 0)
+	{
+		printf("(empty)");
+		return ;
+	}
+	for (size_t i = 0; i < n && i < PRINT_MAX; i++)
+		printf(i ? " -> %d" : "%d", v[i]);
+	if (n > PRINT_MAX)
+		printf(" -> ...");
+}
+
+static void	print_str_array(const char **v, size_t n)
+{
+	if (n == 0)
+	{
+		printf("(empty)");
+		return ;
+	}
+	for (size_t i = 0; i < n && i < PRINT_MAX; i++)
+		printf(i ? " -> \"%s\"" : "\"%s\"", v[i]);
+	if (n > PRINT_MAX)
+		printf(" -> ...");
+}
+
+static void	free_list(t_list *l)
+{
+	while (l)
+	{
+		t_list *next = l->next;
+		free(l);
+		l = next;
+	}
+}
+
+static size_t	real_len(t_list *l)
+{
+	size_t n = 0;
+ 
+	while (l && n < LIST_MAX)
+	{
+		n++;
+		l = l->next;
+	}
+	return (n);
+}
+
+static int	cmp_int(void *a, void *b)
+{
+	int x = *(int *)a;
+	int y = *(int *)b;
+
+	return ((x > y) - (x < y));
+}
+
+/////// FT_ATOI_BASE ///////
+
+typedef struct s_atoi_case
+{
+	const char	*str;
+	const char	*base;
+	int			expected;
+	const char	*desc;
+}				t_atoi_case;
+
+static void	test_atoi_base_valid_base(void)
+{
+	static const t_atoi_case t[] = {
+		{"42", "0123456789", 42, "decimal"},
+		{"0", "0123456789", 0, "zero"},
+		{"0000042", "0123456789", 42, "leading zeros"},
+		{"-42", "0123456789", -42, "negative"},
+		{"+42", "0123456789", 42, "plus sign"},
+		{"--42", "0123456789", 0, "two minus"},
+		{"-+-+42", "0123456789", 0, "mixed signs"},
+		{"  \t\n\v\f\r42", "0123456789", 42, "leading whitespace"},
+		{"  -42", "0123456789", -42, "whitespace then sign"},
+		{"42abc", "0123456789", 42, "stops at invalid char"},
+		{"4 2", "0123456789", 4, "stops at space"},
+		{"abc", "0123456789", 0, "no digit"},
+		{"", "0123456789", 0, "empty string"},
+		{"-", "0123456789", 0, "sign only"},
+		{"- 42", "0123456789", 0, "space after sign"},
+		{"2147483647", "0123456789", 2147483647, "INT_MAX"},
+		{"-2147483648", "0123456789", -2147483648, "INT_MIN"},
+		{"ff", "0123456789abcdef", 255, "hex lower"},
+		{"FF", "0123456789abcdef", 0, "hex: case sensitive"},
+		{"7FFFFFFF", "0123456789ABCDEF", 2147483647, "hex INT_MAX"},
+		{"-80000000", "0123456789ABCDEF", -2147483648, "hex INT_MIN"},
+		{"101010", "01", 42, "binary"},
+		{"-101010", "01", -42, "negative binary"},
+		{"12", "01", 1, "binary stops at '2'"},
+		{"52", "01234567", 42, "octal"},
+		{"poney", "poneyvif", 668, "word base (8): poney"},
+		{"vif", "poneyvif", 375, "word base (8): vif"},
+		{"zz", "abcdefghijklmnopqrstuvwxyz", 25 * 26 + 25, "base 26"},
+		{"ba", "ab", 2, "base 2 with letters"},
+		{NULL, NULL, 0, NULL}
+	};
+
+	for (int i = 0; t[i].str; i++)
+	{
+		int r = ft_atoi_base((char *)t[i].str, (char *)t[i].base);
+ 
+		print_status(r == t[i].expected);
+		printf("%-30s | \"", t[i].desc);
+		put_escaped(t[i].str);
+		printf("\" in \"");
+		put_escaped(t[i].base);
+		printf("\" | result : %d | expected : %d\n", r, t[i].expected);
+	}
+}
+
+static void	test_atoi_base_invalid_base(void)
+{
+	static const t_atoi_case t[] = {
+		{"42", "", 0, "invalid base: empty"},
+		{"42", "0", 0, "invalid base: size 1"},
+		{"42", "00", 0, "invalid base: duplicate (00)"},
+		{"42", "0123456789 ", 0, "invalid base: space"},
+		{"42", "012\t345", 0, "invalid base: tab"},
+		{"42", "012\n345", 0, "invalid base: newline"},
+		{"42", "01+", 0, "invalid base: '+'"},
+		{"42", "01-", 0, "invalid base: '-'"},
+		{"42", "01234567890", 0, "invalid base: dup at the end"},
+		{"1", "0112", 0, "invalid base: dup (0112)"},
+		{"-1", "aba", 0, "invalid base: dup (aba)"},
+		{NULL, NULL, 0, NULL}
+	};
+
+	for (int i = 0; t[i].str; i++)
+	{
+		int r = ft_atoi_base((char *)t[i].str, (char *)t[i].base);
+ 
+		print_status(r == t[i].expected);
+		printf("%-30s | \"", t[i].desc);
+		put_escaped(t[i].str);
+		printf("\" in \"");
+		put_escaped(t[i].base);
+		printf("\" | result : %d | expected : %d\n", r, t[i].expected);
+	}
+}
+
+static void	test_atoi_base(void)
+{
+	printf(BOLD "ft_atoi_base\n" RST);
+	test_atoi_base_valid_base();
+	test_atoi_base_invalid_base();
+	printf("\n");
+}
+
+/////// FT_LIST_PUSH_FRONT ///////
+static void	test_list_push_front_basic(void)
+{
+	int		a = 1, b = 2, c = 3;
+	t_list	*head = NULL;
+
+	// empty list
+	ft_list_push_front(&head, &a);
+	print_status(head && head->data == &a && head->next == NULL
+		&& real_len(head) == 1);
+	printf("%-22s | head->data = &a, next = NULL\n", "push on empty list");
+
+	// add a node 
+	t_list *old = head;
+	ft_list_push_front(&head, &b);
+	print_status(head && head != old && head->data == &b && head->next == old
+		&& old->data == &a && real_len(head) == 2);
+	printf("%-22s | head->data = &b, next = old head\n", "push 2nd element");
+
+	ft_list_push_front(&head, &c);
+	print_status(head && head->data == &c && head->next->data == &b
+		&& head->next->next == old && head->next->next->data == &a
+		&& head->next->next->next == NULL && real_len(head) == 3);
+	printf("%-22s | order : c, b, a\n", "push 3rd element");
+
+	// add node with data NULL
+	ft_list_push_front(&head, NULL);
+	print_status(head && head->data == NULL && head->next->data == &c
+		&& real_len(head) == 4);
+	printf("%-22s | head->data = NULL\n", "push NULL data");
+	free_list(head);
+}
+
+static void test_list_push_front_multiple_pushes(void)
+{
+	t_list	*head = NULL;
+	size_t	n = 1000;
+	int		*vals = malloc(n * sizeof(int));
+	int		ok = 1;
+
+	if (!vals)
+	{
+		printf(RED "list_push_front malloc failed\n" RST);
+		exit(1);
+	}
+	head = NULL;
+	for (size_t i = 0; i < n; i++)
+	{
+		vals[i] = (int)i;
+		ft_list_push_front(&head, &vals[i]);
+	}
+	t_list *cur = head;
+	for (size_t i = 0; i < n && ok; i++)
+	{
+		ok = cur && cur->data == &vals[n - 1 - i];
+		cur = cur ? cur->next : NULL;
+	}
+	print_status(ok && cur == NULL && real_len(head) == n);
+	printf("%-22s | %zu nodes in reverse order\n", "1000 pushes", n);
+	free_list(head);
+	free(vals);
+}
+
+static void	test_list_push_front(void)
+{
+	printf(BOLD "ft_list_push_front\n" RST);
+	test_list_push_front_basic();
+	test_list_push_front_multiple_pushes();
+	printf("\n");
+}
+
+/////// FT_LIST_SIZE ///////
+static void	test_list_size_null(void)
+{
+	print_status(ft_list_size(NULL) == 0);
+	printf("%-22s | result : %d | expected : 0\n", "NULL list", ft_list_size(NULL));
+}
+
+static void	test_list_size_basic(void)
+{
+	size_t	sizes[] = {1, 2, 3, 5, 10, 1000, 100000};
+	void	**data;
+	int		r;
+ 
+	for (size_t i = 0; i < sizeof(sizes) / sizeof(sizes[0]); i++)
+	{
+		size_t n = sizes[i];
+		data = calloc(n, sizeof(void *));
+		if (!data)
+		{
+			printf(RED "list size malloc failed\n" RST);
+			exit(1);
+		}
+		t_list *l = build_list(data, n);
+		r = ft_list_size(l);
+		print_status(r == (int)n);
+		printf("%-22s | result : %d | expected : %zu\n", "list of N nodes", r, n);
+		free_list(l);
+		free(data);
+	}
+ 
+	int		a = 1, b = 2, c = 3;
+	void	*d[] = {&a, &b, &c};
+	t_list	*l = build_list(d, 3);
+	t_list	*second = l->next;
+	ft_list_size(l);
+	print_status(real_len(l) == 3 && l->data == &a && l->next == second
+		&& second->data == &b && second->next->data == &c);
+	printf("%-22s | list unchanged after call\n", "no side effect");
+	free_list(l);
+}
+
+static void	test_list_size(void)
+{
+	printf(BOLD "ft_list_size\n" RST);
+	test_list_size_null();
+	test_list_size_basic();
+	printf("\n");
+}
+
+/////// FT_LIST_SORT ///////
+static void test_list_sort_empty(void)
+{
+	t_list *head = NULL;
+	ft_list_sort(&head, cmp_int);
+	print_status(head == NULL);
+	printf("%-26s | list stays NULL\n", "empty list");
+}
+
+static void	check_sort_int(const char *name, int *in, int *exp, size_t n)
+{
+	void	*ptrs[PRINT_MAX];
+ 
+	for (size_t i = 0; i < n; i++)
+		ptrs[i] = &in[i];
+ 
+	t_list	*head = build_list(ptrs, n);
+	ft_list_sort(&head, cmp_int);
+ 
+	int		ok = (real_len(head) == n);
+	t_list	*cur = head;
+	for (size_t i = 0; i < n && ok; i++, cur = cur->next)
+		ok = (*(int *)cur->data == exp[i]);
+ 
+	print_status(ok);
+	printf("%s\n", name);
+	printf("        input    : ");
+	print_int_array(in, n);
+	printf("\n%s        result   : " RST, ok ? "" : RED);
+	print_int_list(&head);
+	printf("\n");
+	if (!ok)
+	{
+		printf("        expected : ");
+		print_int_array(exp, n);
+		printf("\n");
+	}
+	free_list(head);
+}
+ 
+static void	test_list_sort_int(void)
+{
+	check_sort_int("single element", (int[]){42}, (int[]){42}, 1);
+	check_sort_int("already sorted (2)", (int[]){1, 2}, (int[]){1, 2}, 2);
+	check_sort_int("reversed (2)", (int[]){2, 1}, (int[]){1, 2}, 2);
+	check_sort_int("unsorted (3)", (int[]){3, 1, 2}, (int[]){1, 2, 3}, 3);
+	check_sort_int("already sorted (5)", (int[]){1, 2, 3, 4, 5},
+		(int[]){1, 2, 3, 4, 5}, 5);
+	check_sort_int("reversed (5)", (int[]){5, 4, 3, 2, 1},
+		(int[]){1, 2, 3, 4, 5}, 5);
+	check_sort_int("all equal", (int[]){7, 7, 7, 7}, (int[]){7, 7, 7, 7}, 4);
+	check_sort_int("duplicates", (int[]){3, 1, 3, 1, 2, 2},
+		(int[]){1, 1, 2, 2, 3, 3}, 6);
+	check_sort_int("negatives", (int[]){-5, 10, 0, -10, 5, -1, 1},
+		(int[]){-10, -5, -1, 0, 1, 5, 10}, 7);
+	check_sort_int("INT_MIN / INT_MAX",
+		(int[]){2147483647, -2147483647 - 1, 0, 2147483647, -2147483647 - 1},
+		(int[]){-2147483647 - 1, -2147483647 - 1, 0, 2147483647, 2147483647}, 5);
+	check_sort_int("random values (10)",
+		(int[]){42, -7, 13, 0, 99, -50, 13, 8, -7, 21},
+		(int[]){-50, -7, -7, 0, 8, 13, 13, 21, 42, 99}, 10);
+}
+
+static void	test_list_sort_str(void)
+{
+	const char	*words[] = {"pear", "apple", "fig", "banana", "apple", "cherry", "Zed", ""};
+	const char	*sorted[] = {"", "Zed", "apple", "apple", "banana", "cherry", "fig", "pear"};
+	size_t		nw = sizeof(words) / sizeof(words[0]);
+	void		*ptrs[8];
+	t_list		*head;
+
+	for (size_t i = 0; i < nw; i++)
+		ptrs[i] = (void *)words[i];
+	head = build_list(ptrs, nw);
+	ft_list_sort(&head, ft_strcmp);
+	int ok = (real_len(head) == nw);
+	t_list *cur = head;
+	for (size_t i = 0; i < nw && ok; i++, cur = cur->next)
+		ok = (strcmp((char *)cur->data, sorted[i]) == 0);
+	print_status(ok);
+	printf("strings\n");
+	printf("        input    : ");
+	print_str_array(words, 8);
+	printf("\n%s        result   : " RST, ok ? "" : RED);
+	print_string_list(&head);
+	printf("\n");
+	if (!ok)
+	{
+		printf("        expected : ");
+		print_str_array(sorted, 8);
+		printf("\n");
+	}
+	free_list(head);
+}
+
+static void	test_list_sort(void)
+{
+	printf(BOLD "ft_list_sort\n" RST);
+	test_list_sort_empty();
+	test_list_sort_int();
+	test_list_sort_str();
+	printf("\n");
+}
+
+/////// FT_LIST_REMOVE_IF ///////
+#define FREED_MAX 64
+static void		*g_freed[FREED_MAX];
+static size_t	g_nfreed;
+
+// Record the number of time the free function is called
+static void	record_free(void *p)
+{
+	if (g_nfreed < FREED_MAX)
+		g_freed[g_nfreed] = p;
+	g_nfreed++;
+}
+
+static void	run_remove_if(const char *name, const char **in, size_t n,const char *ref, const char **exp, size_t nexp)
+{
+	char	pool[32][8];
+	void	*ptrs[32];
+	char	ref_buf[8];
+
+	for (size_t i = 0; i < n; i++)
+	{
+		strncpy(pool[i], in[i], 7);
+		pool[i][7] = 0;
+		ptrs[i] = pool[i];
+	}
+	strncpy(ref_buf, ref, 7);
+	ref_buf[7] = 0;
+
+	t_list *head = build_list(ptrs, n);
+	g_nfreed = 0;
+	ft_list_remove_if(&head, ref_buf, ft_strcmp, record_free);
+
+	int		list_ok = (real_len(head) == nexp);
+	t_list	*cur = head;
+	for (size_t i = 0; i < nexp && list_ok; i++, cur = cur->next)
+		list_ok = (strcmp((char *)cur->data, exp[i]) == 0);
+
+	int		free_ok = (g_nfreed == n - nexp);
+	for (size_t i = 0; i < g_nfreed && i < FREED_MAX && free_ok; i++)
+		free_ok = (g_freed[i] && strcmp((char *)g_freed[i], ref_buf) == 0);
+
+	print_status(list_ok && free_ok);
+	printf("%s\n", name);
+	printf("        input    : ");
+	print_str_array(in, n);
+	printf("\n        remove   : \"%s\"\n", ref_buf);
+	printf("%s        result   : " RST, list_ok ? "" : RED);
+	print_string_list(&head);
+	printf("\n");
+	if (!list_ok)
+	{
+		printf("        expected : ");
+		print_str_array(exp, nexp);
+		printf("\n");
+	}
+	printf("%s        free_fct : called %zu time(s), expected %zu" RST "\n",
+		free_ok ? "" : RED, g_nfreed, n - nexp);
+	free_list(head);
+}
+
+static void	test_list_remove_if_basic(void)
+{
+	const char *none[] = {NULL};
+	const char *l1[] = {"apple"};
+	const char *l2[] = {"pear"};
+	const char *l3[] = {"pear", "fig", "plum"};
+	const char *l4[] = {"apple", "pear", "fig"};
+	const char *l5[] = {"pear", "apple", "fig"};
+	const char *l6[] = {"pear", "fig", "apple"};
+	const char *l7[] = {"apple", "apple", "apple", "apple"};
+	const char *l8[] = {"apple", "apple", "pear", "fig"};
+	const char *l9[] = {"pear", "apple", "apple", "apple", "fig"};
+	const char *l10[] = {"pear", "fig", "apple", "apple"};
+	const char *l11[] = {"apple", "pear", "apple", "fig", "apple"};
+	const char *l12[] = {"apple", "pear", "apple", "apple", "fig", "apple", "plum", "apple", "apple"};
+	const char *l13[] = {"app", "apple", "applee"};
+
+	const char *e_pear[] = {"pear"};
+	const char *e_pear_fig[] = {"pear", "fig"};
+	const char *e_pear_fig_plum[] = {"pear", "fig", "plum"};
+	const char *e_prefix[] = {"app", "applee"};
+
+	run_remove_if("empty list", none, 0, "apple", none, 0);
+	run_remove_if("single element, match", l1, 1, "apple", none, 0);
+	run_remove_if("single element, no match", l2, 1, "apple", e_pear, 1);
+	run_remove_if("no match", l3, 3, "apple", e_pear_fig_plum, 3);
+	run_remove_if("remove head", l4, 3, "apple", e_pear_fig, 2);
+	run_remove_if("remove middle", l5, 3, "apple", e_pear_fig, 2);
+	run_remove_if("remove tail", l6, 3, "apple", e_pear_fig, 2);
+	run_remove_if("remove all", l7, 4, "apple", none, 0);
+	run_remove_if("consecutive at head", l8, 4, "apple", e_pear_fig, 2);
+	run_remove_if("consecutive in middle", l9, 5, "apple", e_pear_fig, 2);
+	run_remove_if("consecutive at tail", l10, 4, "apple", e_pear_fig, 2);
+	run_remove_if("alternating", l11, 5, "apple", e_pear_fig, 2);
+	run_remove_if("mixed runs", l12, 9, "apple", e_pear_fig_plum, 3);
+	run_remove_if("similar strings kept", l13, 3, "apple", e_prefix, 2);
+}
+
+static void	test_list_remove_if(void)
+{
+	printf(BOLD "ft_list_remove_if\n" RST);
+	test_list_remove_if_basic();
+	printf("\n");
+}
+
+/*******************************************************************************/
+
 int	main()
 {
 	printf(BOLD "=== LIBASM TESTER ===\n\n" RST);
@@ -623,4 +1195,13 @@ int	main()
 	test_write();
 	test_read();
 	test_strdup();
+
+	printf(BOLD "--- BONUS TESTER ---\n" RST);
+	test_atoi_base();
+	test_list_push_front();
+	test_list_size();
+	test_list_sort();
+	test_list_remove_if();
+
+	return(0);
 }

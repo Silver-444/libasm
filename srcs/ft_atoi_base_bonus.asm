@@ -66,8 +66,7 @@ ft_inbase:
 ; int ft_check_duplicate(char *base)
 ; base      -> rdi
 ; return    -> rax
-ft_check_duplicate:
-    ; xor rax, rax                
+ft_check_duplicate:               
     xor rcx, rcx                ; i = 0
 
 .outer_loop:
