@@ -50,7 +50,6 @@ $(OBJS_DIR)%.o : %.asm
 
 test:
 	$(CC) $(CC_FLAGS) -I $(INC_DIR) $(TESTER_FILE) -L. -l:$(NAME) -o $(TESTER_NAME)
-	@./$(TESTER_NAME)
 
 clean:
 	rm -rf $(OBJS_DIR)

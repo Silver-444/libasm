@@ -588,7 +588,7 @@ static void	test_strdup_malloc_fail(void)
 	errno = 0;
 	res = ft_strdup(s);
 	int saved_errno = errno;
-	setrlimit(RLIMIT_AS, &old);	/* on restaure la limite tout de suite */
+	setrlimit(RLIMIT_AS, &old);
 
 	if (res)
 	{
@@ -1185,23 +1185,107 @@ static void	test_list_remove_if(void)
 }
 
 /*******************************************************************************/
-
-int	main()
+ 
+static const t_test	g_tests[] = {
+	{"strlen", test_strlen, 0},
+	{"strcpy", test_strcpy, 0},
+	{"strcmp", test_strcmp, 0},
+	{"write", test_write, 0},
+	{"read", test_read, 0},
+	{"strdup", test_strdup, 0},
+	{"atoi_base", test_atoi_base, 1},
+	{"list_push_front", test_list_push_front, 1},
+	{"list_size", test_list_size, 1},
+	{"list_sort", test_list_sort, 1},
+	{"list_remove_if", test_list_remove_if, 1},
+	{NULL, NULL, 0}
+};
+ 
+static void	print_usage(FILE *out, const char *prog)
 {
+	fprintf(out, "Usage: %s [all | mandatory | bonus | <function> ...]\n\n", prog);
+	fprintf(out, "  (no argument)   mandatory tests only\n");
+	fprintf(out, "  mandatory       mandatory tests only\n");
+	fprintf(out, "  bonus           bonus tests only\n");
+	fprintf(out, "  all             mandatory + bonus tests\n");
+	fprintf(out, "  <function>      one or more functions, with or without the ft_ prefix\n");
+	fprintf(out, "  -h, --help      show this help\n\n");
+	fprintf(out, "Functions:\n");
+	for (int bonus = 0; bonus <= 1; bonus++)
+	{
+		fprintf(out, "  %-10s", bonus ? "bonus:" : "mandatory:");
+		for (int i = 0; g_tests[i].name; i++)
+			if (g_tests[i].bonus == bonus)
+				fprintf(out, " %s", g_tests[i].name);
+		fprintf(out, "\n");
+	}
+	fprintf(out, "\nExamples:\n");
+	fprintf(out, "  %s                    # mandatory part\n", prog);
+	fprintf(out, "  %s all                # everything\n", prog);
+	fprintf(out, "  %s ft_strlen strdup   # only these two\n", prog);
+}
+ 
+static const t_test	*find_test(const char *arg)
+{
+	if (strncmp(arg, "ft_", 3) == 0)
+		arg += 3;
+	for (int i = 0; g_tests[i].name; i++)
+		if (strcmp(arg, g_tests[i].name) == 0)
+			return (&g_tests[i]);
+	return (NULL);
+}
+ 
+static void	select_group(int *selected, int mandatory, int bonus)
+{
+	for (int i = 0; g_tests[i].name; i++)
+		if (g_tests[i].bonus ? bonus : mandatory)
+			selected[i] = 1;
+}
+ 
+int	main(int argc, char **argv)
+{
+	int	selected[sizeof(g_tests) / sizeof(g_tests[0])] = {0};
+	int	bonus_header = 0;
+ 
+	if (argc == 1)
+		select_group(selected, 1, 0);
+	for (int a = 1; a < argc; a++)
+	{
+		if (strcmp(argv[a], "-h") == 0 || strcmp(argv[a], "--help") == 0)
+		{
+			print_usage(stdout, argv[0]);
+			return (0);
+		}
+		else if (strcmp(argv[a], "all") == 0)
+			select_group(selected, 1, 1);
+		else if (strcmp(argv[a], "mandatory") == 0)
+			select_group(selected, 1, 0);
+		else if (strcmp(argv[a], "bonus") == 0)
+			select_group(selected, 0, 1);
+		else
+		{
+			const t_test *t = find_test(argv[a]);
+			if (!t)
+			{
+				fprintf(stderr, RED "Unknown argument: %s" RST "\n\n", argv[a]);
+				print_usage(stderr, argv[0]);
+				return (1);
+			}
+			selected[t - g_tests] = 1;
+		}
+	}
+ 
 	printf(BOLD "=== LIBASM TESTER ===\n\n" RST);
-	test_strlen();
-	test_strcpy();
-	test_strcmp();
-	test_write();
-	test_read();
-	test_strdup();
-
-	printf(BOLD "--- BONUS TESTER ---\n" RST);
-	test_atoi_base();
-	test_list_push_front();
-	test_list_size();
-	test_list_sort();
-	test_list_remove_if();
-
-	return(0);
+	for (int i = 0; g_tests[i].name; i++)
+	{
+		if (!selected[i])
+			continue ;
+		if (g_tests[i].bonus && !bonus_header)
+		{
+			printf(BOLD "--- BONUS TESTER ---\n" RST);
+			bonus_header = 1;
+		}
+		g_tests[i].fn();
+	}
+	return (0);
 }
