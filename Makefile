@@ -1,4 +1,4 @@
-NAME = libasm
+NAME = libasm.a
 TESTER_NAME = tester
 
 # ----------- Directories -----------
