@@ -13,9 +13,6 @@
 ; list_ptr  -> rdi
 ; return    -> rax
 
-BITS 64
-default rel
-
 
 global  ft_list_remove_if
 extern  free
@@ -39,7 +36,7 @@ ft_list_remove_if:
     cmp r15, 0  ; if node == NULL, go to .end
     je .end
     mov rdi, [r15]  ; rdi <- node->data
-    mov rsi, r12    ; rsi <- node->data
+    mov rsi, r12    ; rsi <- data_ref
     call r13
     cmp rax, 0
     jne .next_node
